@@ -3,10 +3,10 @@ use std::io;
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::Path;
 
-const PAGE_SIZE: usize = 4096;
+pub const PAGE_SIZE: usize = 4096;
 
-#[derive(Clone, Copy)]
-struct PageId(pub u64);
+#[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
+pub struct PageId(pub u64);
 
 impl PageId {
     pub fn to_u64(self) -> u64 {
@@ -14,7 +14,7 @@ impl PageId {
     }
 }
 
-struct DiskManager {
+pub struct DiskManager {
     heap_file: File,
     next_page_id: u64,
 }
