@@ -37,7 +37,7 @@ pub struct BufferPool {
 }
 
 impl BufferPool {
-    fn new(pool_size: usize) -> Self {
+    pub fn new(pool_size: usize) -> Self {
         let mut buffers = vec![];
         buffers.resize_with(pool_size, Default::default);
         let next_victim_id = BufferId::default();
@@ -88,7 +88,7 @@ pub struct BufferPoolManager {
 }
 
 impl BufferPoolManager {
-    fn new(disk: DiskManager, pool: BufferPool) -> Self {
+    pub fn new(disk: DiskManager, pool: BufferPool) -> Self {
         Self {
             disk,
             pool,
