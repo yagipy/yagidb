@@ -9,10 +9,10 @@ type Page = [u8; PAGE_SIZE];
 #[derive(Clone, Copy, Default)]
 struct BufferId(usize);
 
-struct Buffer {
-    page_id: PageId,
-    page: RefCell<Page>,
-    is_dirty: Cell<bool>,
+pub struct Buffer {
+    pub page_id: PageId,
+    pub page: RefCell<Page>,
+    pub is_dirty: Cell<bool>,
 }
 
 impl Default for Buffer {
@@ -96,7 +96,8 @@ impl BufferPoolManager {
         }
     }
 
-    fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, Error> {
+    pub fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, Error> {
+        // dbg!(page_id);
         if let Some(&buffer_id) = self.page_table.get(&page_id) {
             let frame = &mut self.pool.buffers[buffer_id.0];
             frame.usage_count += 1;
@@ -124,7 +125,7 @@ impl BufferPoolManager {
         Ok(page)
     }
 
-    fn create_page(&mut self) -> Result<Rc<Buffer>, Error> {
+    pub fn create_page(&mut self) -> Result<Rc<Buffer>, Error> {
         let buffer_id = self.pool.evict().ok_or(Error::new( // TODO: 修正
             std::io::ErrorKind::Other,
             "no buffer available in the pool",
@@ -147,6 +148,17 @@ impl BufferPoolManager {
         self.page_table.remove(&evict_page_id);
         self.page_table.insert(page_id, buffer_id);
         Ok(page)
+    }
+
+    pub fn flush(&mut self) -> Result<(), Error> {
+        for (&page_id, &buffer_id) in self.page_table.iter() {
+            let frame = &self.pool.buffers[buffer_id.0];
+            let mut page = frame.buffer.page.borrow_mut();
+            self.disk.write_page_data(page_id, page.as_mut())?;
+            frame.buffer.is_dirty.set(false);
+        }
+        self.disk.sync()?;
+        Ok(())
     }
 }
 
