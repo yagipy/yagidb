@@ -3,6 +3,7 @@ pub mod btree;
 pub mod buffer;
 pub mod disk;
 pub mod memcomparable;
+pub mod query;
 pub mod slotted;
 pub mod table;
 pub mod tuple;
